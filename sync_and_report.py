@@ -298,9 +298,9 @@ def _render_shield_badge(path: Path, label: str, value: str, value_color: str) -
 
 
 def render_badges(curves: dict[str, list[dict[str, Any]]]) -> None:
-    """Render one shields-style badge per asset, branded with 马后炮."""
+    """Render one shields-style badge per asset showing cumulative return, branded with 马后炮."""
     for key in market.ASSETS:
-        value = curves[key][-1]["daily_return_pct"]
+        value = curves[key][-1]["return_pct"]
         label = f"马后炮·{market.ASSETS[key]['label'].replace(' ETF', '')}"
         _render_shield_badge(BADGE_SVG[key], label, _fmt_pct(value), _badge_value_color(value))
 
