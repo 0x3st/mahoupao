@@ -2,7 +2,7 @@
 
 中文 · [English](README.en.md)
 
-一个每日自动更新的 ETF 定投数据管道：拉取 Tushare 真实行情，核算「每日收市固定投入」的收益率，并把行情快照（CSV）与净值/收益率曲线图（SVG）发布到本仓库。数据是本仓库唯一关注的内容。
+一个每日自动更新的 ETF 定投数据管道：拉取 Tushare 真实行情，核算「每日收市固定投入」的收益率，并把行情快照（CSV）与投入/市值、账户收益率曲线图（SVG）发布到本仓库。数据是本仓库唯一关注的内容。
 
 ## 每日数据快照
 
@@ -12,22 +12,22 @@
 
 ![沪深300](data/export/badge-csi300.svg) ![标普500](data/export/badge-spx.svg) ![黄金](data/export/badge-gold.svg)
 
-### 净值曲线（等权组合 + 三只标的）
+### 投入 vs 市值（等权组合）
 
-![净值曲线](data/export/nav.svg)
+![投入vs市值](data/export/nav.svg)
 
-### 累计收益率
+### 账户总收益率
 
-![累计收益率](data/export/returns.svg)
+![账户总收益率](data/export/returns.svg)
 
-> 口径：每日收市后按收盘价每只投入 100 元；净值/收益率均排除追加资金影响。数据截至最近一个交易日，周末/节假日无新数据时自动跳过。
+> 口径：每日收市后按收盘价每只投入 100 元；收益率为账户实际收益率（当前市值 ÷ 累计投入 − 1）。数据截至最近一个交易日，周末/节假日无新数据时自动跳过。
 
 ## 数据文件
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（OHLCV，可预览/diff/下载）
-- `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
+- `data/export/daily_returns.csv`：每只标的 + 等权组合的累计投入、当前市值、账户总收益率、每日涨跌
 - `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg`：三只标的的定投累计收益 shield 徽章（红涨绿跌）
-- `data/export/nav.svg` / `returns.svg`：净值曲线、累计收益率曲线
+- `data/export/nav.svg` / `returns.svg`：投入 vs 市值曲线、账户总收益率曲线
 
 ## 回测口径
 

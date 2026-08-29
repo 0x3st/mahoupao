@@ -2,7 +2,7 @@
 
 [中文文档](README.md) · English
 
-A daily-updating ETF accumulation data pipeline: it pulls real Tushare quotes, computes returns for a "fixed daily after-close contribution" strategy, and publishes CSV snapshots plus NAV/return charts to this repo. Data is the only thing this repository cares about.
+A daily-updating ETF accumulation data pipeline: it pulls real Tushare quotes, computes returns for a "fixed daily after-close contribution" strategy, and publishes CSV snapshots plus invested-vs-value and account-return charts to this repo. Data is the only thing this repository cares about.
 
 ## Daily Data Snapshot
 
@@ -12,22 +12,22 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 
 ![CSI 300](data/export/badge-csi300.svg) ![S&P 500](data/export/badge-spx.svg) ![Gold](data/export/badge-gold.svg)
 
-### Net-asset-value curve (equal-weight portfolio + three assets)
+### Invested vs value (equal-weight portfolio)
 
-![Net asset value](data/export/nav.svg)
+![Invested vs value](data/export/nav.svg)
 
-### Cumulative return
+### Account return
 
-![Cumulative return](data/export/returns.svg)
+![Account return](data/export/returns.svg)
 
-> Methodology: 100 CNY is invested at each day's close into each asset; NAV/returns exclude the effect of additional contributions. Data is as of the latest trading day, and the update is skipped automatically on weekends/holidays when there is no new data.
+> Methodology: 100 CNY is invested at each day's close into each asset; returns are real-account returns (current value ÷ total invested − 1). Data is as of the latest trading day, and the update is skipped automatically on weekends/holidays when there is no new data.
 
 ## Data Files
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
-- `data/export/daily_returns.csv` — daily return, cumulative return and NAV per asset + equal-weight portfolio
+- `data/export/daily_returns.csv` — invested, current value, account return and daily change per asset + equal-weight portfolio
 - `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset cumulative-return shield badges (red up, green down)
-- `data/export/nav.svg` / `returns.svg` — NAV chart and cumulative return chart
+- `data/export/nav.svg` / `returns.svg` — invested-vs-value chart and account-return chart
 
 ## Backtest Methodology
 

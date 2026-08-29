@@ -39,7 +39,7 @@ def quotes_path(asset_key: str) -> Path:
     """One CSV file per asset: data/export/<asset_key>.csv."""
     return EXPORT_DIR / f"{asset_key}.csv"
 RETURN_FIELDS = [
-    "asset_key", "trade_date", "daily_return_pct", "cumulative_return_pct", "wealth",
+    "asset_key", "trade_date", "invested", "value", "return_pct", "daily_return_pct",
 ]
 
 COLORS = {
@@ -111,27 +111,35 @@ def sync_incremental(data: dict[str, dict[str, dict[str, Any]]]) -> int:
 # ---------------------------------------------------------------- Reporting
 
 def compute_portfolio(curves: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """Equal-weight portfolio wealth (forward-filled) across the three assets."""
-    by_date: dict[str, dict[str, float]] = {}
+    """Equal-weight portfolio in real-account terms (forward-filled)."""
+    by_date: dict[str, dict[str, dict[str, Any]]] = {}
     for key, curve in curves.items():
         for point in curve:
-            by_date.setdefault(point["date"], {})[key] = point["wealth"]
+            by_date.setdefault(point["date"], {})[key] = point
 
-    last_wealth = {key: 1.0 for key in curves}
+    last: dict[str, dict[str, Any]] = {
+        key: {"invested": 0.0, "value": 0.0, "wealth": 1.0} for key in curves
+    }
     portfolio: list[dict[str, Any]] = []
-    previous: float | None = None
+    previous_wealth: float | None = None
     for trade_date in sorted(by_date):
         for key in curves:
             if key in by_date[trade_date]:
-                last_wealth[key] = by_date[trade_date][key]
-        wealth = sum(last_wealth.values()) / len(last_wealth)
-        daily_return = (wealth / previous - 1.0) * 100.0 if previous else 0.0
+                last[key] = by_date[trade_date][key]
+        invested = sum(last[key]["invested"] for key in curves)
+        value = sum(last[key]["value"] for key in curves)
+        return_pct = (value / invested - 1.0) * 100.0 if invested else 0.0
+        wealth = sum(last[key]["wealth"] for key in curves) / len(curves)
+        daily_return = (wealth / previous_wealth - 1.0) * 100.0 if previous_wealth else 0.0
         portfolio.append({
             "date": trade_date,
+            "invested": invested,
+            "value": value,
+            "return_pct": return_pct,
             "wealth": wealth,
             "daily_return_pct": daily_return,
         })
-        previous = wealth
+        previous_wealth = wealth
     return portfolio
 
 
@@ -143,17 +151,19 @@ def build_returns_rows(curves: dict[str, list[dict[str, Any]]],
             rows.append({
                 "asset_key": key,
                 "trade_date": point["date"],
+                "invested": point["invested"],
+                "value": point["value"],
+                "return_pct": point["return_pct"],
                 "daily_return_pct": point["daily_return_pct"],
-                "cumulative_return_pct": round((point["wealth"] - 1.0) * 100.0, 4),
-                "wealth": point["wealth"],
             })
     for point in portfolio:
         rows.append({
             "asset_key": "portfolio",
             "trade_date": point["date"],
+            "invested": round(point["invested"], 2),
+            "value": round(point["value"], 2),
+            "return_pct": round(point["return_pct"], 4),
             "daily_return_pct": round(point["daily_return_pct"], 4),
-            "cumulative_return_pct": round((point["wealth"] - 1.0) * 100.0, 4),
-            "wealth": round(point["wealth"], 8),
         })
     return rows
 
@@ -307,42 +317,37 @@ def render_badges(curves: dict[str, list[dict[str, Any]]]) -> None:
 
 def render_svgs(curves: dict[str, list[dict[str, Any]]],
                 portfolio: list[dict[str, Any]]) -> None:
-    """Write the README SVGs: badges, net-asset-value and cumulative return."""
+    """Write the README SVGs: badges, invested-vs-value and account return."""
     latest = portfolio[-1]["date"]
 
-    nav_series = [{
-        "name": "组合(等权)",
-        "color": COLORS["portfolio"],
-        "points": [(p["date"], p["wealth"]) for p in portfolio],
-    }]
-    for key in market.ASSETS:
-        nav_series.append({
-            "name": market.ASSETS[key]["label"].replace(" ETF", ""),
-            "color": COLORS[key],
-            "points": [(p["date"], p["wealth"]) for p in curves[key]],
-        })
+    nav_series = [
+        {"name": "累计投入", "color": "#7d8a88",
+         "points": [(p["date"], p["invested"]) for p in portfolio]},
+        {"name": "当前市值", "color": COLORS["portfolio"],
+         "points": [(p["date"], p["value"]) for p in portfolio]},
+    ]
 
     return_series = [{
         "name": "组合(等权)",
         "color": COLORS["portfolio"],
-        "points": [(p["date"], (p["wealth"] - 1.0) * 100.0) for p in portfolio],
+        "points": [(p["date"], p["return_pct"]) for p in portfolio],
     }]
     for key in market.ASSETS:
         return_series.append({
             "name": market.ASSETS[key]["label"].replace(" ETF", ""),
             "color": COLORS[key],
-            "points": [(p["date"], (p["wealth"] - 1.0) * 100.0) for p in curves[key]],
+            "points": [(p["date"], p["return_pct"]) for p in curves[key]],
         })
 
     render_line_chart(
         NAV_SVG,
-        f"每日定投 · 净值曲线（截至 {latest}）",
+        f"每日定投 · 投入 vs 市值（截至 {latest}）",
         nav_series,
-        y_fmt=lambda v: f"{v:.2f}",
+        y_fmt=lambda v: f"{v:,.0f}",
     )
     render_line_chart(
         RETURNS_SVG,
-        f"每日定投 · 累计收益率（截至 {latest}）",
+        f"每日定投 · 账户总收益率（截至 {latest}）",
         return_series,
         y_fmt=lambda v: f"{v:.0f}%",
     )
