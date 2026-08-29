@@ -10,7 +10,7 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 
 ### Latest trading day returns (red up, green down)
 
-![Daily return](data/export/daily-card.svg)
+![CSI 300](data/export/badge-csi300.svg) ![S&P 500](data/export/badge-spx.svg) ![Gold](data/export/badge-gold.svg)
 
 ### Net-asset-value curve (equal-weight portfolio + three assets)
 
@@ -26,7 +26,8 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
 - `data/export/daily_returns.csv` — daily return, cumulative return and NAV per asset + equal-weight portfolio
-- `data/export/nav.svg` / `returns.svg` / `daily-card.svg` — NAV chart, cumulative return chart and daily return card
+- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset daily-return shield badges (red up, green down)
+- `data/export/nav.svg` / `returns.svg` — NAV chart and cumulative return chart
 
 ## Backtest Methodology
 

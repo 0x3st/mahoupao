@@ -10,7 +10,7 @@
 
 ### 最新交易日收益率（红涨绿跌）
 
-![日收益率](data/export/daily-card.svg)
+![沪深300](data/export/badge-csi300.svg) ![标普500](data/export/badge-spx.svg) ![黄金](data/export/badge-gold.svg)
 
 ### 净值曲线（等权组合 + 三只标的）
 
@@ -26,7 +26,8 @@
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（OHLCV，可预览/diff/下载）
 - `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
-- `data/export/nav.svg` / `returns.svg` / `daily-card.svg`：净值曲线、累计收益率曲线与当日收益卡片
+- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg`：三只标的的当日收益 shield 徽章（红涨绿跌）
+- `data/export/nav.svg` / `returns.svg`：净值曲线、累计收益率曲线
 
 ## 回测口径
 

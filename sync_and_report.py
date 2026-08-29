@@ -24,7 +24,7 @@ EXPORT_DIR = ROOT / "data" / "export"
 RETURNS_CSV = EXPORT_DIR / "daily_returns.csv"
 NAV_SVG = EXPORT_DIR / "nav.svg"
 RETURNS_SVG = EXPORT_DIR / "returns.svg"
-DAILY_CARD_SVG = EXPORT_DIR / "daily-card.svg"
+BADGE_SVG = {key: EXPORT_DIR / f"badge-{key}.svg" for key in market.ASSETS}
 
 DAILY_AMOUNT = 100.0            # 每只标的每日投入金额
 START_DATE = date(2014, 1, 15)  # 三只 ETF 的共同历史起点
@@ -252,64 +252,62 @@ def render_line_chart(path: Path, title: str, series_list: list[dict[str, Any]],
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
-def _pnl_color(value: float) -> str:
-    """A-share convention: red for up, green for down."""
-    if value > 0:
-        return "#ff5c5c"
-    if value < 0:
-        return "#3ddc84"
-    return "#a9b4b1"
-
-
 def _fmt_pct(value: float) -> str:
     return f"{value:+.2f}%"
 
 
-def render_daily_card(curves: dict[str, list[dict[str, Any]]],
-                      portfolio: list[dict[str, Any]]) -> None:
-    """Render a GitHub-stats-style card showing the latest day's returns."""
-    latest = portfolio[-1]["date"]
-    items = [("组合", portfolio[-1]["daily_return_pct"])]
-    for key in market.ASSETS:
-        label = market.ASSETS[key]["label"].replace(" ETF", "")
-        items.append((label, curves[key][-1]["daily_return_pct"]))
+def _text_width(text: str, size: float) -> float:
+    """Approximate rendered width: CJK chars ~1.0em, ASCII ~0.6em."""
+    return sum(size if ord(ch) > 127 else size * 0.6 for ch in text)
 
-    width, height = 860, 140
-    pad = 24
-    cell_w = (width - pad * 2) / len(items)
+
+def _badge_value_color(value: float) -> str:
+    """A-share convention badge background: red up, green down."""
+    if value > 0:
+        return "#e04f4f"
+    if value < 0:
+        return "#2ea44f"
+    return "#6b7280"
+
+
+def _render_shield_badge(path: Path, label: str, value: str, value_color: str) -> None:
+    """Render a tiny shields.io-style badge: left label, right value."""
+    font_size = 11
+    height = 20
+    pad_x = 7
+    radius = 3
+    label_w = _text_width(label, font_size) + pad_x * 2
+    value_w = _text_width(value, font_size) + pad_x * 2
+    total = label_w + value_w
 
     parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
-        f'font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif">',
-        f'<rect width="{width}" height="{height}" rx="14" fill="#101716"/>',
-        f'<text x="{pad}" y="32" fill="#7d8a88" font-size="12">日收益率 · DAILY RETURN</text>',
-        f'<text x="{width - pad}" y="32" fill="#7d8a88" font-size="12" text-anchor="end">{latest}</text>',
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{total:.0f}" height="{height}">',
+        f'<path d="M{radius} 0 h{label_w - radius:.1f} v{height} h-{label_w - radius:.1f} '
+        f'a{radius} {radius} 0 0 1 -{radius} -{radius} v-{height - 2 * radius} '
+        f'a{radius} {radius} 0 0 1 {radius} -{radius} Z" fill="#2f3b39"/>',
+        f'<path d="M{label_w:.1f} 0 h{value_w - radius:.1f} a{radius} {radius} 0 0 1 {radius} {radius} '
+        f'v{height - 2 * radius} a{radius} {radius} 0 0 1 -{radius} {radius} '
+        f'h-{value_w - radius:.1f} v-{height} Z" fill="{value_color}"/>',
+        f'<text x="{label_w / 2:.1f}" y="14" fill="#fff" text-anchor="middle" '
+        f'font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="{font_size}">{_escape(label)}</text>',
+        f'<text x="{label_w + value_w / 2:.1f}" y="14" fill="#fff" text-anchor="middle" '
+        f'font-family="Verdana,DejaVu Sans,Geneva,sans-serif" font-size="{font_size}">{_escape(value)}</text>',
+        '</svg>',
     ]
+    path.write_text("\n".join(parts), encoding="utf-8")
 
-    for i, (label, value) in enumerate(items):
-        if i > 0:
-            x = pad + cell_w * i
-            parts.append(
-                f'<line x1="{x:.1f}" y1="44" x2="{x:.1f}" y2="{height - 40}" '
-                f'stroke="#2a3432" stroke-width="1"/>'
-            )
-        cx = pad + cell_w * i + cell_w / 2
-        parts.append(
-            f'<text x="{cx:.1f}" y="82" fill="#a9b4b1" font-size="14" '
-            f'text-anchor="middle">{_escape(label)}</text>'
-        )
-        parts.append(
-            f'<text x="{cx:.1f}" y="116" fill="{_pnl_color(value)}" font-size="30" '
-            f'font-weight="700" text-anchor="middle">{_fmt_pct(value)}</text>'
-        )
 
-    parts.append("</svg>")
-    DAILY_CARD_SVG.write_text("\n".join(parts), encoding="utf-8")
+def render_badges(curves: dict[str, list[dict[str, Any]]]) -> None:
+    """Render one shields-style badge per asset, branded with 马后炮."""
+    for key in market.ASSETS:
+        value = curves[key][-1]["daily_return_pct"]
+        label = f"马后炮·{market.ASSETS[key]['label'].replace(' ETF', '')}"
+        _render_shield_badge(BADGE_SVG[key], label, _fmt_pct(value), _badge_value_color(value))
 
 
 def render_svgs(curves: dict[str, list[dict[str, Any]]],
                 portfolio: list[dict[str, Any]]) -> None:
-    """Write the README SVGs: daily card, net-asset-value and cumulative return."""
+    """Write the README SVGs: badges, net-asset-value and cumulative return."""
     latest = portfolio[-1]["date"]
 
     nav_series = [{
@@ -348,7 +346,7 @@ def render_svgs(curves: dict[str, list[dict[str, Any]]],
         return_series,
         y_fmt=lambda v: f"{v:.0f}%",
     )
-    render_daily_card(curves, portfolio)
+    render_badges(curves)
 
 
 # ---------------------------------------------------------------- Main
