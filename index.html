@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101716" />
+    <title>马后炮 / Mahoupao — 定投回测</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="马后炮首页">
+          <span class="brand-mark"><i></i><i></i><i></i></span>
+          <span>
+            <strong>马后炮</strong>
+            <small>MAHOUPAO</small>
+          </span>
+        </a>
+        <div class="topbar-meta">
+          <span class="status-dot"></span>
+          <span id="data-status">本地回测引擎就绪</span>
+          <span class="topbar-divider"></span>
+          <span class="date-readout" id="today-readout">—</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero-grid reveal reveal-delay-1">
+          <div class="hero-copy">
+            <p class="eyebrow"><span>DAILY CONTRIBUTION LAB</span><em>01</em></p>
+            <h1>让时间，<br /><span>变成一条曲线。</span></h1>
+            <p class="hero-lede">
+              用一个固定的动作，回看三种资产在同一段时间里的耐心、波动与回报。
+            </p>
+            <div class="hero-footnote">
+              <span class="mini-line"></span>
+              <span>固定投入 · 不择时 · 每日收市结算</span>
+            </div>
+          </div>
+          <div class="hero-note">
+            <div class="note-kicker">默认实验窗口</div>
+            <div class="note-date">2014<span>—</span>至今</div>
+            <p>三只 ETF 的共同历史起点。起点可以修改，但结算规则会始终保持一致。</p>
+            <div class="note-stamp">
+              <span>3</span>
+              <small>MARKETS<br />TRACKED</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="control-panel panel reveal reveal-delay-2" aria-labelledby="control-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-index">实验设置 / 02</p>
+              <h2 id="control-title">先把规则写下来</h2>
+            </div>
+            <p class="panel-helper">每日收市结算 · 小数份额模拟</p>
+          </div>
+          <form id="backtest-form">
+            <div class="control-row control-row-main">
+              <label class="field field-date">
+                <span>开始日期</span>
+                <input id="start-date" name="start_date" type="date" min="2014-01-15" value="2014-01-15" />
+              </label>
+              <div class="rule-chip">
+                <span class="rule-icon">⌁</span>
+                <span><b>结算频率</b><small>每日一次</small></span>
+              </div>
+              <div class="rule-chip">
+                <span class="rule-icon">◷</span>
+                <span><b>结算时点</b><small>各市场收市</small></span>
+              </div>
+              <button class="run-button" type="submit">
+                <span>运行并保存</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h12M10 5l5 5-5 5" /></svg>
+              </button>
+            </div>
+            <div class="control-row amount-row">
+              <label class="amount-field csi-field">
+                <span class="asset-swatch csi-swatch"></span>
+                <span class="amount-label"><b>沪深300 ETF</b><small>人民币 / 交易日</small></span>
+                <span class="currency-prefix">¥</span>
+                <input id="amount-csi" name="amount_csi300" type="number" min="0.01" step="1" value="100" />
+              </label>
+              <label class="amount-field spx-field">
+                <span class="asset-swatch spx-swatch"></span>
+                <span class="amount-label"><b>标普500 ETF</b><small>人民币 / 交易日</small></span>
+                <span class="currency-prefix">¥</span>
+                <input id="amount-spx" name="amount_spx" type="number" min="0.01" step="1" value="100" />
+              </label>
+              <label class="amount-field gold-field">
+                <span class="asset-swatch gold-swatch"></span>
+                <span class="amount-label"><b>黄金 ETF</b><small>人民币 / 交易日</small></span>
+                <span class="currency-prefix">¥</span>
+                <input id="amount-gold" name="amount_gold" type="number" min="0.01" step="1" value="100" />
+              </label>
+            </div>
+            <div class="archive-note" id="archive-note" role="status" aria-live="polite">
+              <span>LOCAL ARCHIVE</span>
+              <p>打开页面只预览；点击“运行并保存”后，完整数据会写入本地回测档案。</p>
+            </div>
+          </form>
+        </section>
+
+        <section class="asset-section reveal reveal-delay-3" aria-labelledby="asset-title">
+          <div class="section-heading-inline">
+            <div>
+              <p class="section-index">三种耐心 / 03</p>
+              <h2 id="asset-title">如果每天都买一点</h2>
+            </div>
+            <span class="section-caption">历史日线回测 · 点击卡片查看曲线</span>
+          </div>
+          <div class="asset-grid" id="asset-grid"></div>
+        </section>
+
+        <section class="chart-section panel reveal reveal-delay-4" aria-labelledby="chart-title">
+          <div class="chart-header">
+            <div>
+              <p class="section-index">时间的回声 / 04</p>
+              <div class="chart-title-row">
+                <h2 id="chart-title">—</h2>
+                <span class="source-pill" id="chart-source">—</span>
+              </div>
+            </div>
+            <div class="chart-legend" aria-label="图表图例">
+              <span><i class="legend-value"></i>账户市值</span>
+              <span><i class="legend-invested"></i>累计投入</span>
+            </div>
+          </div>
+          <div class="chart-wrap" id="chart-wrap">
+            <canvas id="performance-chart" aria-label="定投收益曲线"></canvas>
+            <div class="chart-tooltip" id="chart-tooltip" role="status" aria-live="polite"></div>
+            <div class="chart-empty" id="chart-empty">正在准备你的第一条曲线…</div>
+          </div>
+          <div class="chart-footer">
+            <span id="chart-start">—</span>
+            <span class="chart-footer-center">每日收市结算 · 本币计价</span>
+            <span id="chart-end">—</span>
+          </div>
+        </section>
+
+        <section class="details-grid reveal reveal-delay-5">
+          <article class="detail-panel detail-panel-accent">
+            <div class="detail-topline"><span>RETURN / 05</span><span id="detail-window">—</span></div>
+            <h3>这段时间，钱走了多远？</h3>
+            <div class="detail-big" id="detail-return">—</div>
+            <p>累计收益率反映的是账户市值相对于累计投入的变化。定投中的每一笔钱，都会单独被记住。</p>
+          </article>
+          <article class="detail-panel">
+            <div class="detail-topline"><span>RISK / 06</span><span>高点回撤</span></div>
+            <h3>最难熬的时刻</h3>
+            <div class="detail-big detail-risk" id="detail-drawdown">—</div>
+            <p>最大回撤以排除追加资金影响的财富曲线计算，更接近你真正经历过的下跌。</p>
+          </article>
+          <article class="detail-panel detail-panel-dark">
+            <div class="detail-topline"><span>NOTE / 07</span><span>方法说明</span></div>
+            <h3>这不是预测</h3>
+            <p class="method-copy">它只把一套固定规则放回历史里，看看如果当时坚持，会留下什么轨迹。历史不会保证下一次。</p>
+            <div class="method-tag">SIMULATION ONLY</div>
+          </article>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>马后炮 / mahoupao</span>
+        <span>日线回测 · Tushare 数据接入</span>
+        <span>v0.1</span>
+      </footer>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
