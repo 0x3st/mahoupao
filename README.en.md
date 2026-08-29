@@ -8,6 +8,10 @@ A daily-updating ETF accumulation data pipeline: it pulls real Tushare quotes, c
 
 The charts below are regenerated automatically by GitHub Actions every day from real Tushare data.
 
+### Latest trading day returns (red up, green down)
+
+![Daily return](data/export/daily-card.svg)
+
 ### Net-asset-value curve (equal-weight portfolio + three assets)
 
 ![Net asset value](data/export/nav.svg)
@@ -22,7 +26,7 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
 - `data/export/daily_returns.csv` — daily return, cumulative return and NAV per asset + equal-weight portfolio
-- `data/export/nav.svg` / `returns.svg` — NAV and return charts
+- `data/export/nav.svg` / `returns.svg` / `daily-card.svg` — NAV chart, cumulative return chart and daily return card
 
 ## Backtest Methodology
 

@@ -24,6 +24,7 @@ EXPORT_DIR = ROOT / "data" / "export"
 RETURNS_CSV = EXPORT_DIR / "daily_returns.csv"
 NAV_SVG = EXPORT_DIR / "nav.svg"
 RETURNS_SVG = EXPORT_DIR / "returns.svg"
+DAILY_CARD_SVG = EXPORT_DIR / "daily-card.svg"
 
 DAILY_AMOUNT = 100.0            # 每只标的每日投入金额
 START_DATE = date(2014, 1, 15)  # 三只 ETF 的共同历史起点
@@ -251,9 +252,64 @@ def render_line_chart(path: Path, title: str, series_list: list[dict[str, Any]],
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
+def _pnl_color(value: float) -> str:
+    """A-share convention: red for up, green for down."""
+    if value > 0:
+        return "#ff5c5c"
+    if value < 0:
+        return "#3ddc84"
+    return "#a9b4b1"
+
+
+def _fmt_pct(value: float) -> str:
+    return f"{value:+.2f}%"
+
+
+def render_daily_card(curves: dict[str, list[dict[str, Any]]],
+                      portfolio: list[dict[str, Any]]) -> None:
+    """Render a GitHub-stats-style card showing the latest day's returns."""
+    latest = portfolio[-1]["date"]
+    items = [("组合", portfolio[-1]["daily_return_pct"])]
+    for key in market.ASSETS:
+        label = market.ASSETS[key]["label"].replace(" ETF", "")
+        items.append((label, curves[key][-1]["daily_return_pct"]))
+
+    width, height = 860, 140
+    pad = 24
+    cell_w = (width - pad * 2) / len(items)
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif">',
+        f'<rect width="{width}" height="{height}" rx="14" fill="#101716"/>',
+        f'<text x="{pad}" y="32" fill="#7d8a88" font-size="12">日收益率 · DAILY RETURN</text>',
+        f'<text x="{width - pad}" y="32" fill="#7d8a88" font-size="12" text-anchor="end">{latest}</text>',
+    ]
+
+    for i, (label, value) in enumerate(items):
+        if i > 0:
+            x = pad + cell_w * i
+            parts.append(
+                f'<line x1="{x:.1f}" y1="44" x2="{x:.1f}" y2="{height - 40}" '
+                f'stroke="#2a3432" stroke-width="1"/>'
+            )
+        cx = pad + cell_w * i + cell_w / 2
+        parts.append(
+            f'<text x="{cx:.1f}" y="82" fill="#a9b4b1" font-size="14" '
+            f'text-anchor="middle">{_escape(label)}</text>'
+        )
+        parts.append(
+            f'<text x="{cx:.1f}" y="116" fill="{_pnl_color(value)}" font-size="30" '
+            f'font-weight="700" text-anchor="middle">{_fmt_pct(value)}</text>'
+        )
+
+    parts.append("</svg>")
+    DAILY_CARD_SVG.write_text("\n".join(parts), encoding="utf-8")
+
+
 def render_svgs(curves: dict[str, list[dict[str, Any]]],
                 portfolio: list[dict[str, Any]]) -> None:
-    """Write the two README SVGs: net-asset-value and cumulative return."""
+    """Write the README SVGs: daily card, net-asset-value and cumulative return."""
     latest = portfolio[-1]["date"]
 
     nav_series = [{
@@ -292,6 +348,7 @@ def render_svgs(curves: dict[str, list[dict[str, Any]]],
         return_series,
         y_fmt=lambda v: f"{v:.0f}%",
     )
+    render_daily_card(curves, portfolio)
 
 
 # ---------------------------------------------------------------- Main

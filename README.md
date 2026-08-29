@@ -8,6 +8,10 @@
 
 下面的图表由 GitHub Actions 每天自动更新，数据来自 Tushare 真实行情。
 
+### 最新交易日收益率（红涨绿跌）
+
+![日收益率](data/export/daily-card.svg)
+
 ### 净值曲线（等权组合 + 三只标的）
 
 ![净值曲线](data/export/nav.svg)
@@ -22,7 +26,7 @@
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（OHLCV，可预览/diff/下载）
 - `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
-- `data/export/nav.svg` / `returns.svg`：净值与收益率曲线图
+- `data/export/nav.svg` / `returns.svg` / `daily-card.svg`：净值曲线、累计收益率曲线与当日收益卡片
 
 ## 回测口径
 
