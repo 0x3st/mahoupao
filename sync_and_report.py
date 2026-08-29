@@ -21,7 +21,6 @@ import server  # reuse ASSETS / fetch / clean / compute logic
 
 ROOT = Path(__file__).resolve().parent
 EXPORT_DIR = ROOT / "data" / "export"
-QUOTES_CSV = EXPORT_DIR / "quotes.csv"
 RETURNS_CSV = EXPORT_DIR / "daily_returns.csv"
 NAV_SVG = EXPORT_DIR / "nav.svg"
 RETURNS_SVG = EXPORT_DIR / "returns.svg"
@@ -30,9 +29,14 @@ DAILY_AMOUNT = 100.0            # 每只标的每日投入金额
 START_DATE = date(2014, 1, 15)  # 三只 ETF 的共同历史起点
 
 QUOTE_FIELDS = [
-    "asset_key", "trade_date", "open", "high", "low", "close",
+    "trade_date", "open", "high", "low", "close",
     "pre_close", "change", "pct_chg", "vol", "amount",
 ]
+
+
+def quotes_path(asset_key: str) -> Path:
+    """One CSV file per asset: data/export/<asset_key>.csv."""
+    return EXPORT_DIR / f"{asset_key}.csv"
 RETURN_FIELDS = [
     "asset_key", "trade_date", "daily_return_pct", "cumulative_return_pct", "wealth",
 ]
@@ -48,26 +52,27 @@ COLORS = {
 # ---------------------------------------------------------------- CSV I/O
 
 def load_quotes_csv() -> dict[str, dict[str, dict[str, Any]]]:
-    """Return {asset_key: {trade_date: quote_row}} from the committed CSV."""
+    """Return {asset_key: {trade_date: quote_row}} from the per-asset CSVs."""
     data: dict[str, dict[str, dict[str, Any]]] = {key: {} for key in server.ASSETS}
-    if not QUOTES_CSV.is_file():
-        return data
-    with QUOTES_CSV.open(newline="", encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
-            key = row.get("asset_key")
-            if key in data and row.get("trade_date"):
-                data[key][row["trade_date"]] = row
+    for key in server.ASSETS:
+        path = quotes_path(key)
+        if not path.is_file():
+            continue
+        with path.open(newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("trade_date"):
+                    data[key][row["trade_date"]] = row
     return data
 
 
 def save_quotes_csv(data: dict[str, dict[str, dict[str, Any]]]) -> None:
     EXPORT_DIR.mkdir(parents=True, exist_ok=True)
-    with QUOTES_CSV.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=QUOTE_FIELDS)
-        writer.writeheader()
-        for key in server.ASSETS:
+    for key in server.ASSETS:
+        with quotes_path(key).open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=QUOTE_FIELDS)
+            writer.writeheader()
             for trade_date in sorted(data[key]):
-                writer.writerow({"asset_key": key, **data[key][trade_date]})
+                writer.writerow(data[key][trade_date])
 
 
 def save_returns_csv(rows: list[dict[str, Any]]) -> None:
@@ -295,7 +300,7 @@ def main() -> None:
     data = load_quotes_csv()
     new_count = sync_incremental(data)
 
-    if new_count == 0 and QUOTES_CSV.is_file():
+    if new_count == 0 and all(quotes_path(key).is_file() for key in server.ASSETS):
         print("无新交易数据（周末/节假日/数据未出），跳过本次更新。")
         return
 

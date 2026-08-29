@@ -63,7 +63,7 @@ data/backtests/<回测编号>.json
 
 周末/节假日无新数据时，workflow 会自动跳过提交。数据文件说明：
 
-- `data/export/quotes.csv`：三只 ETF 的完整日线行情快照（可预览/diff/下载）
+- `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（可预览/diff/下载）
 - `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
 - `data/export/nav.svg` / `returns.svg`：净值与收益率曲线图
 

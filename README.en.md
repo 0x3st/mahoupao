@@ -65,7 +65,7 @@ First-time setup:
 
 On weekends/holidays with no new data the workflow skips committing. Data files:
 
-- `data/export/quotes.csv` — full daily OHLCV snapshot of the three ETFs (preview/diff/download)
+- `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
 - `data/export/daily_returns.csv` — daily return, cumulative return and NAV per asset + equal-weight portfolio
 - `data/export/nav.svg` / `returns.svg` — NAV and return charts
 
