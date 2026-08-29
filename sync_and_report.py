@@ -6,7 +6,7 @@ recomputes the accumulation backtest, then writes CSV + SVG artifacts that
 the workflow commits back to the repository.
 
 The CSV files committed to Git are the durable "database" here; nothing needs
-a local SQLite file or a long-lived server.
+a local SQLite file or a long-lived market.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
-import server  # reuse ASSETS / fetch / clean / compute logic
+import market  # reuse ASSETS / fetch / clean / compute logic
 
 
 ROOT = Path(__file__).resolve().parent
@@ -53,8 +53,8 @@ COLORS = {
 
 def load_quotes_csv() -> dict[str, dict[str, dict[str, Any]]]:
     """Return {asset_key: {trade_date: quote_row}} from the per-asset CSVs."""
-    data: dict[str, dict[str, dict[str, Any]]] = {key: {} for key in server.ASSETS}
-    for key in server.ASSETS:
+    data: dict[str, dict[str, dict[str, Any]]] = {key: {} for key in market.ASSETS}
+    for key in market.ASSETS:
         path = quotes_path(key)
         if not path.is_file():
             continue
@@ -67,7 +67,7 @@ def load_quotes_csv() -> dict[str, dict[str, dict[str, Any]]]:
 
 def save_quotes_csv(data: dict[str, dict[str, dict[str, Any]]]) -> None:
     EXPORT_DIR.mkdir(parents=True, exist_ok=True)
-    for key in server.ASSETS:
+    for key in market.ASSETS:
         with quotes_path(key).open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=QUOTE_FIELDS)
             writer.writeheader()
@@ -90,7 +90,7 @@ def sync_incremental(data: dict[str, dict[str, dict[str, Any]]]) -> int:
     """Pull any quotes newer than the CSV snapshot; returns number of new rows."""
     today = date.today()
     new_count = 0
-    for key, asset in server.ASSETS.items():
+    for key, asset in market.ASSETS.items():
         dates = data[key]
         if dates:
             start = date.fromisoformat(max(dates)) + timedelta(days=1)
@@ -98,8 +98,8 @@ def sync_incremental(data: dict[str, dict[str, dict[str, Any]]]) -> int:
             start = date.fromisoformat(asset["list_date"])
         if start > today:
             continue
-        cleaned = server.clean_quote_rows(
-            server.fetch_tushare_quotes(asset, start, today), start, today
+        cleaned = market.clean_quote_rows(
+            market.fetch_tushare_quotes(asset, start, today), start, today
         )
         for row in cleaned:
             data[key][row["trade_date"]] = row
@@ -137,7 +137,7 @@ def compute_portfolio(curves: dict[str, list[dict[str, Any]]]) -> list[dict[str,
 def build_returns_rows(curves: dict[str, list[dict[str, Any]]],
                        portfolio: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for key in server.ASSETS:
+    for key in market.ASSETS:
         for point in curves[key]:
             rows.append({
                 "asset_key": key,
@@ -261,9 +261,9 @@ def render_svgs(curves: dict[str, list[dict[str, Any]]],
         "color": COLORS["portfolio"],
         "points": [(p["date"], p["wealth"]) for p in portfolio],
     }]
-    for key in server.ASSETS:
+    for key in market.ASSETS:
         nav_series.append({
-            "name": server.ASSETS[key]["label"].replace(" ETF", ""),
+            "name": market.ASSETS[key]["label"].replace(" ETF", ""),
             "color": COLORS[key],
             "points": [(p["date"], p["wealth"]) for p in curves[key]],
         })
@@ -273,9 +273,9 @@ def render_svgs(curves: dict[str, list[dict[str, Any]]],
         "color": COLORS["portfolio"],
         "points": [(p["date"], (p["wealth"] - 1.0) * 100.0) for p in portfolio],
     }]
-    for key in server.ASSETS:
+    for key in market.ASSETS:
         return_series.append({
-            "name": server.ASSETS[key]["label"].replace(" ETF", ""),
+            "name": market.ASSETS[key]["label"].replace(" ETF", ""),
             "color": COLORS[key],
             "points": [(p["date"], (p["wealth"] - 1.0) * 100.0) for p in curves[key]],
         })
@@ -300,20 +300,20 @@ def main() -> None:
     data = load_quotes_csv()
     new_count = sync_incremental(data)
 
-    if new_count == 0 and all(quotes_path(key).is_file() for key in server.ASSETS):
+    if new_count == 0 and all(quotes_path(key).is_file() for key in market.ASSETS):
         print("无新交易数据（周末/节假日/数据未出），跳过本次更新。")
         return
 
     save_quotes_csv(data)
 
     curves: dict[str, list[dict[str, Any]]] = {}
-    for key in server.ASSETS:
+    for key in market.ASSETS:
         rows = [
             {"date": trade_date, "price": float(data[key][trade_date]["close"])}
             for trade_date in sorted(data[key])
             if trade_date >= START_DATE.isoformat()
         ]
-        curves[key] = server.compute_backtest(key, rows, DAILY_AMOUNT)["curve"]
+        curves[key] = market.compute_backtest(key, rows, DAILY_AMOUNT)["curve"]
 
     portfolio = compute_portfolio(curves)
     save_returns_csv(build_returns_rows(curves, portfolio))

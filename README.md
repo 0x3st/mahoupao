@@ -2,9 +2,7 @@
 
 中文 · [English](README.en.md)
 
-一个用于比较三只场内 ETF“每日收市固定投入”的历史回测原型。
-
-这是离线回测工具，不做盘中行情或自动刷新。页面打开时只预览；点击“运行并保存”后，才会生成一份本地档案。
+一个每日自动更新的 ETF 定投数据管道：拉取 Tushare 真实行情，核算「每日收市固定投入」的收益率，并把行情快照（CSV）与净值/收益率曲线图（SVG）发布到本仓库。数据是本仓库唯一关注的内容。
 
 ## 每日数据快照
 
@@ -20,6 +18,12 @@
 
 > 口径：每日收市后按收盘价每只投入 100 元；净值/收益率均排除追加资金影响。数据截至最近一个交易日，周末/节假日无新数据时自动跳过。
 
+## 数据文件
+
+- `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（OHLCV，可预览/diff/下载）
+- `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
+- `data/export/nav.svg` / `returns.svg`：净值与收益率曲线图
+
 ## 回测口径
 
 - 默认起点：`2014-01-15`，三只 ETF 的共同历史起点
@@ -28,25 +32,8 @@
 - 沪深300：`510300.SH`，华泰柏瑞沪深300ETF
 - 标普500：`513500.SH`，博时标普500ETF(QDII)
 - 黄金：`518880.SH`，华安易富黄金ETF
-- 未配置 Token 时自动使用稳定的离线演示数据，方便先看界面和回测逻辑
 
-这版按固定金额允许买入小数份额，适合观察“每天投入100元”的资金曲线；真实场内交易通常还要考虑100份整数手、手续费、分红和申赎/折溢价。后续可以增加“整数手+现金结转”模式。
-
-## 回测档案
-
-每次点击“运行并保存”，系统都会把本次参数、三只 ETF 的完整每日曲线和汇总指标保存到：
-
-```text
-data/backtests/<回测编号>.json
-```
-
-档案文件默认不纳入 Git，且不会写入 Tushare Token。
-
-## ETF 备选池
-
-- 沪深300：默认 `510300.SH`；备选 `510310.SH`、`159919.SZ`
-- 标普500：默认 `513500.SH`；备选 `513650.SH`、`159655.SZ`
-- 黄金：默认 `518880.SH`；备选 `159934.SZ`、`159937.SZ`
+这版按固定金额允许买入小数份额，适合观察“每天投入100元”的资金曲线；真实场内交易通常还要考虑100份整数手、手续费、分红和申赎/折溢价。
 
 ## GitHub Actions 每日更新
 
@@ -61,25 +48,17 @@ data/backtests/<回测编号>.json
 1. 在仓库 `Settings → Secrets and variables → Actions` 添加 `TUSHARE_TOKEN`
 2. （可选）手动触发一次：`Actions → Daily update → Run workflow`
 
-周末/节假日无新数据时，workflow 会自动跳过提交。数据文件说明：
+周末/节假日无新数据时，workflow 会自动跳过提交。
 
-- `data/export/csi300.csv` / `spx.csv` / `gold.csv`：三只 ETF 各自的完整日线行情快照（可预览/diff/下载）
-- `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
-- `data/export/nav.svg` / `returns.svg`：净值与收益率曲线图
-
-## 运行
+## 本地运行
 
 ```bash
 cp .env.example .env
 # 编辑 .env，填入你的 Tushare Pro Token
-python3 server.py
+python3 sync_and_report.py
 ```
 
-也可以不创建 `.env`，直接执行 `export TUSHARE_TOKEN="你的 Tushare Pro Token"`。
-
-然后打开 <http://127.0.0.1:8000>。
-
-没有 Token 也可以直接运行，页面会明确标记为 `OFFLINE DEMO`。
+脚本会增量拉取新行情，并重新生成 `data/export/` 下的 CSV 与 SVG。
 
 Tushare 接口说明：
 
