@@ -1,86 +1,90 @@
-# 马后炮 / Mahoupao
+# Mahoupao (马后炮)
 
-一个用于比较三只场内 ETF“每日收市固定投入”的历史回测原型。
+English · [中文文档](README.zh-CN.md)
 
-这是离线回测工具，不做盘中行情或自动刷新。页面打开时只预览；点击“运行并保存”后，才会生成一份本地档案。
+A backtesting prototype that compares three on-exchange ETFs under a "fixed daily after-close contribution" strategy.
 
-## 每日数据快照
+> "马后炮" (mahoupao) is Chinese for "hindsight" — a fitting name for a backtest tool.
 
-下面的图表由 GitHub Actions 每天自动更新，数据来自 Tushare 真实行情。
+This is an offline backtest tool: no intraday quotes, no auto-refresh. The page only previews on load; a local archive is written only after you click "Run & Save".
 
-### 净值曲线（等权组合 + 三只标的）
+## Daily Data Snapshot
 
-![净值曲线](data/export/nav.svg)
+The charts below are regenerated automatically by GitHub Actions every day from real Tushare data.
 
-### 累计收益率
+### Net-asset-value curve (equal-weight portfolio + three assets)
 
-![累计收益率](data/export/returns.svg)
+![Net asset value](data/export/nav.svg)
 
-> 口径：每日收市后按收盘价每只投入 100 元；净值/收益率均排除追加资金影响。数据截至最近一个交易日，周末/节假日无新数据时自动跳过。
+### Cumulative return
 
-## 回测口径
+![Cumulative return](data/export/returns.svg)
 
-- 默认起点：`2014-01-15`，三只 ETF 的共同历史起点
-- 每个标的使用自己的交易日历；非交易日不结算
-- 每个交易日收市后按收盘价完成一次结算和估值
-- 沪深300：`510300.SH`，华泰柏瑞沪深300ETF
-- 标普500：`513500.SH`，博时标普500ETF(QDII)
-- 黄金：`518880.SH`，华安易富黄金ETF
-- 未配置 Token 时自动使用稳定的离线演示数据，方便先看界面和回测逻辑
+> Methodology: 100 CNY is invested at each day's close into each asset; NAV/returns exclude the effect of additional contributions. Data is as of the latest trading day, and the update is skipped automatically on weekends/holidays when there is no new data.
 
-这版按固定金额允许买入小数份额，适合观察“每天投入100元”的资金曲线；真实场内交易通常还要考虑100份整数手、手续费、分红和申赎/折溢价。后续可以增加“整数手+现金结转”模式。
+## Backtest Methodology
 
-## 回测档案
+- Default start: `2014-01-15`, the earliest common history of the three ETFs
+- Each asset uses its own trading calendar; non-trading days are not settled
+- Settlement and valuation happen once per day at the closing price
+- CSI 300: `510300.SH`, Huatai-PineBridge CSI 300 ETF
+- S&P 500: `513500.SH`, Bosera S&P 500 ETF (QDII)
+- Gold: `518880.SH`, Huaan Yifu Gold ETF
+- Without a token the tool falls back to stable offline demo data, so you can explore the UI and logic first
 
-每次点击“运行并保存”，系统都会把本次参数、三只 ETF 的完整每日曲线和汇总指标保存到：
+This version allows fractional shares at a fixed amount, ideal for observing the "100 CNY per day" wealth curve. Real on-exchange trading also involves 100-share lots, fees, dividends and premium/discount; a "whole-lot + cash carry" mode may be added later.
+
+## Backtest Archive
+
+Every "Run & Save" stores the parameters, the full daily curves of the three ETFs and summary metrics to:
 
 ```text
-data/backtests/<回测编号>.json
+data/backtests/<backtest-id>.json
 ```
 
-档案文件默认不纳入 Git，且不会写入 Tushare Token。
+Archives are excluded from Git by default and never contain the Tushare token.
 
-## ETF 备选池
+## ETF Universe
 
-- 沪深300：默认 `510300.SH`；备选 `510310.SH`、`159919.SZ`
-- 标普500：默认 `513500.SH`；备选 `513650.SH`、`159655.SZ`
-- 黄金：默认 `518880.SH`；备选 `159934.SZ`、`159937.SZ`
+- CSI 300: default `510300.SH`; alternatives `510310.SH`, `159919.SZ`
+- S&P 500: default `513500.SH`; alternatives `513650.SH`, `159655.SZ`
+- Gold: default `518880.SH`; alternatives `159934.SZ`, `159937.SZ`
 
-## GitHub Actions 每日更新
+## GitHub Actions Daily Update
 
-仓库自带 `.github/workflows/daily-update.yml`，每天北京时间 20:30 左右自动运行：
+The repo ships with `.github/workflows/daily-update.yml`, which runs daily around 20:30 Beijing time:
 
-1. 增量拉取 Tushare 新行情
-2. 重新核算每日收益率
-3. 更新 `data/export/` 下的 CSV 与 SVG 并提交
+1. Incrementally pulls new Tushare quotes
+2. Recomputes daily returns
+3. Commits the updated CSV + SVG under `data/export/`
 
-首次使用只需两步：
+First-time setup:
 
-1. 在仓库 `Settings → Secrets and variables → Actions` 添加 `TUSHARE_TOKEN`
-2. （可选）手动触发一次：`Actions → Daily update → Run workflow`
+1. Add `TUSHARE_TOKEN` under `Settings → Secrets and variables → Actions`
+2. (Optional) trigger once manually: `Actions → Daily update → Run workflow`
 
-周末/节假日无新数据时，workflow 会自动跳过提交。数据文件说明：
+On weekends/holidays with no new data the workflow skips committing. Data files:
 
-- `data/export/quotes.csv`：三只 ETF 的完整日线行情快照（可预览/diff/下载）
-- `data/export/daily_returns.csv`：每只标的 + 等权组合的每日收益率、累计收益率、净值
-- `data/export/nav.svg` / `returns.svg`：净值与收益率曲线图
+- `data/export/quotes.csv` — full daily OHLCV snapshot of the three ETFs (preview/diff/download)
+- `data/export/daily_returns.csv` — daily return, cumulative return and NAV per asset + equal-weight portfolio
+- `data/export/nav.svg` / `returns.svg` — NAV and return charts
 
-## 运行
+## Running Locally
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入你的 Tushare Pro Token
+# edit .env and fill in your Tushare Pro token
 python3 server.py
 ```
 
-也可以不创建 `.env`，直接执行 `export TUSHARE_TOKEN="你的 Tushare Pro Token"`。
+Or skip `.env` and run `export TUSHARE_TOKEN="your Tushare Pro token"` first.
 
-然后打开 <http://127.0.0.1:8000>。
+Then open <http://127.0.0.1:8000>.
 
-没有 Token 也可以直接运行，页面会明确标记为 `OFFLINE DEMO`。
+You can also run without a token; the page will be clearly marked `OFFLINE DEMO`.
 
-Tushare 接口说明：
+Tushare API reference:
 
-- [ETF日线行情](https://tushare.pro/document/2?doc_id=127)
-- [公募基金列表](https://tushare.pro/document/1?doc_id=19)
-- [HTTP 调取方式](https://tushare.pro/document/1?doc_id=40)
+- [ETF daily quotes](https://tushare.pro/document/2?doc_id=127)
+- [Mutual fund list](https://tushare.pro/document/1?doc_id=19)
+- [HTTP API](https://tushare.pro/document/1?doc_id=40)
