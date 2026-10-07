@@ -12,6 +12,8 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 
 ![CSI 300](data/export/badge-csi300.svg) ![S&P 500](data/export/badge-spx.svg) ![Gold](data/export/badge-gold.svg)
 
+Badge values show cumulative DCA returns. Colors reflect the change in that metric from the previous trading day: red for an increase, green for a decrease, and gray for no change or no previous observation, regardless of whether the cumulative return is positive or negative.
+
 ### Invested vs value (equal-weight portfolio)
 
 ![Invested vs value](data/export/nav.svg)
@@ -28,6 +30,14 @@ The charts below are regenerated automatically by GitHub Actions every day from 
 - `data/export/daily_returns.csv` — invested, current value, account return and daily change per asset + equal-weight portfolio
 - `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset cumulative-return shield badges (red up, green down)
 - `data/export/nav.svg` / `returns.svg` — invested-vs-value chart and account-return chart
+
+## Intuition
+
+Think of this as a mechanical savings ledger: from a fixed starting date, invest the same amount in each ETF every trading day, without market timing or selling. Lower prices buy more units; higher prices buy fewer.
+
+- **The number shows cumulative profit or loss**: `current value ÷ total invested − 1`. A reading of `+20%` means every 100 CNY contributed is now worth 120 CNY on average. It is neither a daily nor an annualized return.
+- **The color shows the metric's change**: a move from `+20%` to `+19%` is green despite remaining profitable; a move from `−10%` to `−9%` is red despite remaining underwater. This compares account cumulative returns on consecutive trading days, not the ETF's daily price movement; new contributions also affect this ratio.
+- **It answers a retrospective question**: “What if I had kept investing this way?” It does not measure actual investors' average holdings or sentiment, nor promise to predict future returns. Changing the starting date changes the result.
 
 ## Backtest Methodology
 

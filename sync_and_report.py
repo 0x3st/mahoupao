@@ -271,11 +271,11 @@ def _text_width(text: str, size: float) -> float:
     return sum(size if ord(ch) > 127 else size * 0.6 for ch in text)
 
 
-def _badge_value_color(value: float) -> str:
-    """A-share convention badge background: red up, green down."""
-    if value > 0:
+def _badge_value_color(change: float) -> str:
+    """Color the change from the previous observation: red up, green down."""
+    if change > 0:
         return "#e04f4f"
-    if value < 0:
+    if change < 0:
         return "#2ea44f"
     return "#6b7280"
 
@@ -308,11 +308,13 @@ def _render_shield_badge(path: Path, label: str, value: str, value_color: str) -
 
 
 def render_badges(curves: dict[str, list[dict[str, Any]]]) -> None:
-    """Render one shields-style badge per asset showing cumulative return, branded with 马后炮."""
+    """Show cumulative return, colored by its change from the previous trading day."""
     for key in market.ASSETS:
-        value = curves[key][-1]["return_pct"]
+        curve = curves[key]
+        value = curve[-1]["return_pct"]
+        change = value - curve[-2]["return_pct"] if len(curve) > 1 else 0.0
         label = f"马后炮·{market.ASSETS[key]['label'].replace(' ETF', '')}"
-        _render_shield_badge(BADGE_SVG[key], label, _fmt_pct(value), _badge_value_color(value))
+        _render_shield_badge(BADGE_SVG[key], label, _fmt_pct(value), _badge_value_color(change))
 
 
 def render_svgs(curves: dict[str, list[dict[str, Any]]],
