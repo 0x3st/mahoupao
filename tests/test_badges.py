@@ -8,19 +8,19 @@ import sync_and_report as report
 
 
 class BadgeTests(unittest.TestCase):
-    def test_badge_shows_daily_index_point_change_and_direction(self):
+    def test_badge_shows_index_level_colored_by_daily_change(self):
         cases = [
-            ("positive_falling", [25.0, 24.87], "#2ea44f", "-0.13"),
-            ("negative_rising", [-12.0, -10.0], "#e04f4f", "+2.00"),
-            ("positive_rising", [24.0, 25.0], "#e04f4f", "+1.00"),
-            ("negative_falling", [-10.0, -12.0], "#2ea44f", "-2.00"),
-            ("unchanged", [25.0, 25.0], "#6b7280", "+0.00"),
-            ("first_observation", [25.0], "#6b7280", "—"),
-            ("falls_to_zero", [1.0, 0.0], "#2ea44f", "-1.00"),
-            ("rises_to_zero", [-1.0, 0.0], "#e04f4f", "+1.00"),
-            ("latest_csi300", [17.7092, 18.1298], "#e04f4f", "+0.42"),
-            ("latest_spx", [65.8470, 65.7024], "#2ea44f", "-0.14"),
-            ("latest_gold", [146.4520, 149.7015], "#e04f4f", "+3.25"),
+            ("positive_falling", [25.0, 24.87], "#2ea44f", "+24.87"),
+            ("negative_rising", [-12.0, -10.0], "#e04f4f", "-10.00"),
+            ("positive_rising", [24.0, 25.0], "#e04f4f", "+25.00"),
+            ("negative_falling", [-10.0, -12.0], "#2ea44f", "-12.00"),
+            ("unchanged", [25.0, 25.0], "#6b7280", "+25.00"),
+            ("first_observation", [25.0], "#6b7280", "+25.00"),
+            ("falls_to_zero", [1.0, 0.0], "#2ea44f", "+0.00"),
+            ("rises_to_zero", [-1.0, 0.0], "#e04f4f", "+0.00"),
+            ("latest_csi300", [17.7092, 18.1298], "#e04f4f", "+18.13"),
+            ("latest_spx", [65.8470, 65.7024], "#2ea44f", "+65.70"),
+            ("latest_gold", [146.4520, 149.7015], "#e04f4f", "+149.70"),
         ]
         ns = {"svg": "http://www.w3.org/2000/svg"}
         with tempfile.TemporaryDirectory() as tmp:

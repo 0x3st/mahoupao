@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f4ef">
+  <meta name="description" content="如果每天投入同样的钱，不猜涨跌，到今天这本账会怎样？马后炮指数，用一份定投账本观察沪深300、标普500与黄金。">
+  <title>马后炮指数 — 今天的价格，过去的成本</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#history">跳到历史曲线</a>
+  <header class="site-header wrap">
+    <a class="brand" href="/" aria-label="马后炮首页"><span class="seal">马</span><span>马后炮<span class="brand-en">MAHOUPAO INDEX</span></span></a>
+    <nav aria-label="主导航"><a href="#history">指数走势</a><a href="#intuition">如何理解</a><a href="https://github.com/0x3st/mahoupao" target="_blank" rel="noopener noreferrer">开源账本 <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div><p class="eyebrow"><span class="small-line"></span> 不猜明天，算清今天</p><h1 id="hero-title">今天的价格，<br>过去的<span class="accent">成本。</span></h1><p class="hero-copy">如果每天都投入同样的钱，不择时，不卖出。<br>走到今天，这本账会怎样？</p></div>
+      <aside class="hero-note"><span class="note-number">01 — THE IDEA</span><p>把「要是当时买了」<br>变成一份<span class="underline">有规则的账本</span>。</p><div class="note-rule"></div><span>每只 ETF · 每交易日 ¥100<br>从 2014.01.15 开始记录</span></aside>
+    </section>
+
+    <div class="section-heading"><h2>今日账面 <span class="heading-en">THE LATEST READING</span></h2><span class="data-status" id="data-status" role="status">正在读取公开账本…</span></div>
+    <div class="notice" id="notice" role="status" hidden></div>
+    <div class="error-box" id="error" role="alert" hidden><p>账本暂时没有加载成功。</p><button id="retry" type="button">重新读取 ↻</button></div>
+    <section class="asset-grid" id="asset-grid" aria-label="三类资产指数" aria-busy="true">
+      <div class="loading-card">读取沪深300…</div><div class="loading-card">读取标普500…</div><div class="loading-card">读取黄金…</div>
+    </section>
+    <p class="reading-key"><span class="key-dot up"></span>红涨 <span class="key-dot down"></span>绿跌 <span class="key-divider">/</span> 数字是累计收益率的百分数值，不带 %；徽章颜色表示较上一交易日的涨跌。</p>
+
+    <section class="chart-panel" id="history" aria-labelledby="history-title">
+      <div class="chart-heading"><div><p class="eyebrow">02 — THROUGH TIME</p><h2 id="history-title">把时间展开</h2><p class="muted">同一份定投规则，三条不同的成本记忆。</p></div><div class="range-controls" id="ranges" role="group" aria-label="历史时间范围"><button data-range="1m" aria-pressed="false">1个月</button><button data-range="1y" aria-pressed="true">1年</button><button data-range="3y" aria-pressed="false">3年</button><button data-range="all" aria-pressed="false">全部</button></div></div>
+      <div class="chart-toolbar"><div class="series-controls" id="series-controls" role="group" aria-label="曲线选择"><button data-series="compare" aria-pressed="true">三类资产</button><button data-series="csi300" aria-pressed="false">沪深300</button><button data-series="spx" aria-pressed="false">标普500</button><button data-series="gold" aria-pressed="false">黄金</button><button data-series="portfolio" aria-pressed="false">定投组合</button></div><span class="chart-unit">单位：指数点</span></div>
+      <div id="chart-legend" class="chart-legend"></div>
+      <div class="chart-stage" id="chart-stage"><svg id="chart" viewBox="0 0 1060 340" role="img" aria-label="正在加载历史指数曲线"></svg><div id="chart-tooltip" class="chart-tooltip" hidden></div></div>
+      <div class="chart-foot"><span id="chart-dates">—</span><span>仅截取显示区间，不重置定投起点 · 0 为回本线</span></div>
+    </section>
+
+    <section class="ledger" aria-labelledby="ledger-title"><div><p class="eyebrow">03 — THE ACCOUNT</p><h2 id="ledger-title">三份投入，一本总账。</h2><p>每天各投 ¥100，持仓随行情自然变化。<br>等额投入，不等于市值始终等权。</p></div><div class="ledger-values" id="ledger-values"><span class="muted">正在核对账本…</span></div></section>
+
+    <section id="intuition" class="intuition" aria-labelledby="intuition-title"><div class="section-heading"><h2 id="intuition-title">这个指数，怎么读？</h2><span class="heading-en">A LITTLE INTUITION</span></div><div class="explainer-grid"><article><span class="step">01</span><h3>不是挑一个好买点</h3><p>每天等额投入，便宜时买到的份额多，贵时买到的份额少。我们记录的是固定起点以来的成本，而不是事后挑选的最低价。</p></article><article><span class="step">02</span><h3>看价格离成本多远</h3><p>指数是累计收益率的百分数值去掉 %。指数为 20，表示累计投入的每 100 元现在值 120 元；指数为 −10，则值 90 元。</p></article><article><span class="step">03</span><h3>把水平和变化分开</h3><p>从 20 到 19，徽章显示绿色 +19.00，仍然盈利；从 −10 到 −9，显示红色 −9.00，仍然亏损。数字看累计盈亏，不带 %；颜色看较前一天的涨跌。</p></article></div>
+      <div class="formula"><span>指数的定义</span><code>100 ×（当前市值 ÷ 累计投入 − 1）</code><span>零点，正好回本。</span></div>
+      <details><summary>为什么说它记住了成本？<span aria-hidden="true">+</span></summary><div class="details-body"><p>等额定投下，平均每份成本是历史价格的调和平均数：<code>n ÷ Σ(1 / Pᵢ)</code>。指数也可以写成 <code>100 ×（当前价格 ÷ 平均成本 − 1）</code>。即使终点价格相同，走过的价格路径不同，读数也可能不同。</p><p>新投入的钱买入当刻不产生盈亏，却会增加本金，所以即使价格不变，新增投入也会把累计收益率向零拉近。日变动不等于 ETF 的当天收益，也不等于当天赚亏金额。指数既不是年化收益率，也不承诺预测未来。</p></div></details>
+    </section>
+    <aside class="disclaimer"><span class="disclaimer-label">只记账，不荐股。</span><p>这是允许小数份额的历史模拟，使用 ETF 收盘价，未计手续费、现金分红及拆并份额等调整。更换起点会改变结果；高不等于该卖，低不等于该买。标普500为境内 QDII ETF，不等同于美元计价的底层指数。数据仅供观察，不构成投资建议。</p></aside>
+  </main>
+  <footer class="site-footer wrap"><div class="footer-brand">马后炮<span>描述已经发生的结果，不把事后解释包装成事前预测。</span></div><div><a href="https://github.com/0x3st/mahoupao" target="_blank" rel="noopener noreferrer">数据与方法 ↗</a><span>Tushare 行情 · GitHub 日更 · Cloudflare Workers</span></div></footer>
+  <noscript><p class="wrap">请启用 JavaScript 查看交互图表，或访问 <a href="https://github.com/0x3st/mahoupao">GitHub 账本</a>查看数据。</p></noscript>
+</body>
+</html>

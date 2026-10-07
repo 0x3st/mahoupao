@@ -2,17 +2,19 @@
 
 [中文文档](README.md) · English
 
-A daily-updating ETF accumulation data pipeline: it pulls real Tushare quotes, computes returns for a "fixed daily after-close contribution" strategy, and publishes CSV snapshots plus invested-vs-value and account-return charts to this repo. Data is the only thing this repository cares about.
+A daily-updating ETF accumulation ledger: it pulls real Tushare quotes, computes returns for a "fixed daily after-close contribution" strategy, and publishes CSV snapshots plus invested-vs-value and account-return charts to this repo. The website displays the same public data rather than maintaining a separate backtest.
+
+**[Open the index website ↗](https://mahoupao-index.leiwu3.workers.dev)** · Index readings and daily direction, interactive history, the portfolio ledger, and methodology, with mobile support. It reads the repository's daily-updated data directly; see [`website/README.md`](website/README.md) for development and deployment instructions.
 
 ## Daily Data Snapshot
 
 The charts below are regenerated automatically by GitHub Actions every day from real Tushare data.
 
-### Mahoupao index · Change since the previous trading day (red up, green down)
+### Mahoupao index (number: cumulative return; color: daily direction)
 
 ![CSI 300](data/export/badge-csi300.svg) ![S&P 500](data/export/badge-spx.svg) ![Gold](data/export/badge-gold.svg)
 
-Index = `(current value ÷ total invested − 1) × 100`: the cumulative return's percentage number without the percent sign. Badges show **today's index − the previous trading day's index**, in points without `%`: red for an increase, green for a decrease, and gray for no change. Without a previous observation, a gray `—` is shown.
+Index = `(current value ÷ total invested − 1) × 100`: the cumulative return's percentage number without the percent sign. **Badge numbers show the current index without `%`; colors show its direction since the previous trading day**: red for an increase, green for a decrease, and gray for no change or no previous observation.
 
 ### Invested vs value (equal-weight portfolio)
 
@@ -28,7 +30,7 @@ Index = `(current value ÷ total invested − 1) × 100`: the cumulative return'
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
 - `data/export/daily_returns.csv` — invested, current value, account return and daily change per asset + equal-weight portfolio
-- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset daily index-change shield badges (in points; red up, green down)
+- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset index shield badges (cumulative percentage numbers without `%`; color indicates daily direction)
 - `data/export/nav.svg` / `returns.svg` — invested-vs-value chart and account-return chart
 
 ## Intuition
@@ -69,15 +71,15 @@ The index is the cumulative return's percentage number without `%`. **Zero means
 | `0` | Current value equals total contributions |
 | `−10` | A cumulative return of −10%; every 100 CNY contributed is now worth 90 CNY on average |
 
-**The index level describes cumulative profit or loss; the badge shows the change in that level since the previous trading day:**
+**The badge number describes cumulative profit or loss; its color shows the direction since the previous trading day:**
 
-- From `20` to `19`: green `−1.00`, a decline of one point while the account remains profitable.
-- From `−10` to `−9`: red `+1.00`, an increase of one point while the account remains underwater.
-- No change: gray `+0.00`; no previous observation: gray `—`.
+- From `20` to `19`: green `+19.00`. The cumulative return is 19%; green means the reading declined, even though the account remains profitable.
+- From `−10` to `−9`: red `−9.00`. The cumulative return is −9%; red means the reading increased, even though the account remains underwater.
+- No change or no previous observation: the current index is still displayed, in gray.
 
-This is **subtraction of two index readings**, not a relative percentage change or the ETF's daily return. Chart and CSV fields labeled as returns retain their percentage convention.
+**The number is neither the difference between two days nor the ETF's daily return. Its sign indicates cumulative profit or loss; its color indicates daily direction.** A positive number can be green and a negative number can be red. Chart and CSV fields labeled as returns retain their percentage convention.
 
-One subtlety: new contributions increase invested capital without generating profit or loss at the moment of purchase. Even with an unchanged price, a contribution pulls the existing cumulative return toward zero. Badge changes therefore reflect both price movements and contributions; they are not a direct measure of the day's cash profit or loss.
+One subtlety: new contributions increase invested capital without generating profit or loss at the moment of purchase. Even with an unchanged price, a contribution pulls the existing cumulative return toward zero. Index changes (and hence badge colors) therefore reflect both price movements and contributions; they are not a direct measure of the day's cash profit or loss.
 
 ### What it does — and does not — tell you
 
