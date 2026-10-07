@@ -262,8 +262,8 @@ def render_line_chart(path: Path, title: str, series_list: list[dict[str, Any]],
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
-def _fmt_pct(value: float) -> str:
-    return f"{value:+.2f}%"
+def _fmt_index_change(change: float) -> str:
+    return f"{round(change, 2) or 0.0:+.2f}"
 
 
 def _text_width(text: str, size: float) -> float:
@@ -308,13 +308,14 @@ def _render_shield_badge(path: Path, label: str, value: str, value_color: str) -
 
 
 def render_badges(curves: dict[str, list[dict[str, Any]]]) -> None:
-    """Show cumulative return, colored by its change from the previous trading day."""
+    """Show the daily index-point change, not the cumulative return or a percent."""
     for key in market.ASSETS:
         curve = curves[key]
         value = curve[-1]["return_pct"]
         change = value - curve[-2]["return_pct"] if len(curve) > 1 else 0.0
         label = f"马后炮·{market.ASSETS[key]['label'].replace(' ETF', '')}"
-        _render_shield_badge(BADGE_SVG[key], label, _fmt_pct(value), _badge_value_color(change))
+        text = _fmt_index_change(change) if len(curve) > 1 else "—"
+        _render_shield_badge(BADGE_SVG[key], label, text, _badge_value_color(change))
 
 
 def render_svgs(curves: dict[str, list[dict[str, Any]]],

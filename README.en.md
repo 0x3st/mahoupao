@@ -8,11 +8,11 @@ A daily-updating ETF accumulation data pipeline: it pulls real Tushare quotes, c
 
 The charts below are regenerated automatically by GitHub Actions every day from real Tushare data.
 
-### Cumulative return (red up, green down)
+### Mahoupao index · Change since the previous trading day (red up, green down)
 
 ![CSI 300](data/export/badge-csi300.svg) ![S&P 500](data/export/badge-spx.svg) ![Gold](data/export/badge-gold.svg)
 
-Badge values show cumulative DCA returns. Colors reflect the change in that metric from the previous trading day: red for an increase, green for a decrease, and gray for no change or no previous observation, regardless of whether the cumulative return is positive or negative.
+Index = `(current value ÷ total invested − 1) × 100`: the cumulative return's percentage number without the percent sign. Badges show **today's index − the previous trading day's index**, in points without `%`: red for an increase, green for a decrease, and gray for no change. Without a previous observation, a gray `—` is shown.
 
 ### Invested vs value (equal-weight portfolio)
 
@@ -28,16 +28,64 @@ Badge values show cumulative DCA returns. Colors reflect the change in that metr
 
 - `data/export/csi300.csv` / `spx.csv` / `gold.csv` — per-asset daily OHLCV snapshots (preview/diff/download)
 - `data/export/daily_returns.csv` — invested, current value, account return and daily change per asset + equal-weight portfolio
-- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset cumulative-return shield badges (red up, green down)
+- `data/export/badge-csi300.svg` / `badge-spx.svg` / `badge-gold.svg` — per-asset daily index-change shield badges (in points; red up, green down)
 - `data/export/nav.svg` / `returns.svg` — invested-vs-value chart and account-return chart
 
 ## Intuition
 
-Think of this as a mechanical savings ledger: from a fixed starting date, invest the same amount in each ETF every trading day, without market timing or selling. Lower prices buy more units; higher prices buy fewer.
+### Why “Mahoupao” — hindsight?
 
-- **The number shows cumulative profit or loss**: `current value ÷ total invested − 1`. A reading of `+20%` means every 100 CNY contributed is now worth 120 CNY on average. It is neither a daily nor an annualized return.
-- **The color shows the metric's change**: a move from `+20%` to `+19%` is green despite remaining profitable; a move from `−10%` to `−9%` is red despite remaining underwater. This compares account cumulative returns on consecutive trading days, not the ETF's daily price movement; new contributions also affect this ratio.
-- **It answers a retrospective question**: “What if I had kept investing this way?” It does not measure actual investors' average holdings or sentiment, nor promise to predict future returns. Changing the starting date changes the result.
+Looking at a historical chart, it is easy to say, “I should have bought back then.” Picking the bottom benefits from hindsight. Mahoupao asks a different question that requires no entry-point selection:
+
+> **What if, from a specified starting date, I had invested the same amount every trading day, without predicting prices or selling? What would that account look like today?**
+
+This is the ledger of a hypothetical, strictly rule-following investor, not an estimate of actual investors' average performance or a backtest of the best possible entry point.
+
+### From market price to accumulated cost
+
+A market price tells you what one unit costs now. This index tells you how far that price stands above or below the average cost accumulated by this particular DCA account.
+
+Equal cash contributions buy more units at lower prices and fewer at higher prices. Two histories ending at the same price can therefore produce different holdings, average costs, and index readings. The index retains **the account's cost history since a fixed starting date**, rather than describing today's price alone.
+
+For one ETF, let `P_i` be the closing price on trading day `i`, `a` the fixed daily contribution, and `n` the number of contributions:
+
+```text
+Units held Q = Σ(a / P_i)
+Total invested I = n × a
+Current value V = P_n × Q
+Average cost per unit C = I / Q = n / Σ(1 / P_i)
+Mahoupao index M = 100 × (V / I − 1) = 100 × (P_n / C − 1)
+```
+
+The average cost is the **harmonic mean** of past closing prices, not their arithmetic mean. Under the current fractional-share model, ignoring fees and other adjustments, `a` cancels out: investing 10 rather than 100 CNY daily changes the account's size, not its index reading.
+
+### Reading the index and the badge
+
+The index is the cumulative return's percentage number without `%`. **Zero means breakeven**; this is not a conventional price index starting at 100 or 1,000:
+
+| Index | Account interpretation |
+|---|---|
+| `20` | A cumulative return of 20%; every 100 CNY contributed is now worth 120 CNY on average |
+| `0` | Current value equals total contributions |
+| `−10` | A cumulative return of −10%; every 100 CNY contributed is now worth 90 CNY on average |
+
+**The index level describes cumulative profit or loss; the badge shows the change in that level since the previous trading day:**
+
+- From `20` to `19`: green `−1.00`, a decline of one point while the account remains profitable.
+- From `−10` to `−9`: red `+1.00`, an increase of one point while the account remains underwater.
+- No change: gray `+0.00`; no previous observation: gray `—`.
+
+This is **subtraction of two index readings**, not a relative percentage change or the ETF's daily return. Chart and CSV fields labeled as returns retain their percentage convention.
+
+One subtlety: new contributions increase invested capital without generating profit or loss at the moment of purchase. Even with an unchanged price, a contribution pulls the existing cumulative return toward zero. Badge changes therefore reflect both price movements and contributions; they are not a direct measure of the day's cash profit or loss.
+
+### What it does — and does not — tell you
+
+The index describes the historical account experience of applying the same contribution rule to different assets: money invested, current value, and profit or loss relative to accumulated cost. The portfolio reading uses total account value divided by total contributions. Equal contributions do not keep market-value weights equal and do not imply periodic rebalancing.
+
+It is not an annualized return, a valuation verdict, or a measure of actual investors' holdings or sentiment. **A high reading does not mean “sell”; a low reading does not mean “buy.”** Predictive value requires separate testing. Starting dates, contribution rules, and price histories affect readings and must be kept consistent when comparing results.
+
+This remains a simplified historical simulation using ETF closing prices, without fees, cash dividends, or share split/consolidation adjustments. It is not a complete total-return measure of fund NAV or the underlying index. The name is a reminder: **describe what happened; do not dress hindsight up as foresight.**
 
 ## Backtest Methodology
 
